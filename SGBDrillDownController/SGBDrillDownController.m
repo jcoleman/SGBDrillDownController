@@ -1193,6 +1193,25 @@ NSString * const SGBDrillDownControllerDidReplaceNotification = @"SGBDrillDownCo
 
 - (void)replaceRightViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void (^)(void))completion
 {
+  [self replaceRightViewController:viewController
+                          animated:animated
+                        animations:^(UIViewController* oldRightController, UIViewController* newRightController) {
+    [[NSNotificationCenter defaultCenter] postNotificationName:SGBDrillDownControllerWillReplaceNotification object:self];
+
+    if (ON_LEGACY_UI) self.rightNavigationBar.alpha = 1;
+    if (ON_LEGACY_UI) self.rightToolbar.alpha = 1;
+
+    oldRightController.view.drillDownContainerView.alpha = 0;
+    newRightController.view.drillDownContainerView.alpha = 1;
+
+  } completion:completion];
+}
+
+- (void)replaceRightViewController:(UIViewController *)viewController
+                          animated:(BOOL)animated
+                        animations:(void (^)(UIViewController* oldRightController, UIViewController* newRightController))animations
+                        completion:(void (^)(void))completion
+{
     if (!self.leftViewController) [NSException raise:SGBDrillDownControllerException format:@"Cannot replace right controller without a left controller"];
     
     if (viewController == self.rightViewController)
@@ -1252,17 +1271,7 @@ NSString * const SGBDrillDownControllerDidReplaceNotification = @"SGBDrillDownCo
     [self bringBarsToFront];
     
     NSTimeInterval animationDuration = animated ? kAnimationDuration : 0;
-    [self animateWithDuration:animationDuration animations:^{
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:SGBDrillDownControllerWillReplaceNotification object:self];
-        
-        if (ON_LEGACY_UI) self.rightNavigationBar.alpha = 1;
-        if (ON_LEGACY_UI) self.rightToolbar.alpha = 1;
-        
-        oldRightController.view.drillDownContainerView.alpha = 0;
-        newRightController.view.drillDownContainerView.alpha = 1;
-        
-    } completion:^(BOOL finished) {
+    [self animateWithDuration:animationDuration animations:animations completion:^(BOOL finished) {
         
         if (newRightController == self.rightPlaceholderController)
         {

@@ -46,6 +46,10 @@ extern NSString * const SGBDrillDownControllerDidReplaceNotification;
 
 // Split behaviour
 - (void)replaceRightViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void(^)(void))completion;
+- (void)replaceRightViewController:(UIViewController *)viewController
+                          animated:(BOOL)animated
+                        animations:(void (^)(UIViewController* oldRightController, UIViewController* newRightController))animations
+                        completion:(void (^)(void))completion;
 
 - (void)showRightViewController:(UIViewController *)rightViewController forLeftViewController:(UIViewController *)leftViewController animated:(BOOL)animated completion:(void(^)(void))completion;
 
