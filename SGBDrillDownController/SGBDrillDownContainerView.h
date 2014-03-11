@@ -10,6 +10,7 @@
 
 @interface SGBDrillDownContainerView : UIView
 
+@property (nonatomic, strong) UIColor *borderBackgroundColor UI_APPEARANCE_SELECTOR;
 @property (nonatomic, strong, readonly) UIView *leftBorderView;
 @property (nonatomic, strong, readonly) UIView *rightBorderView;
 @property (nonatomic, strong, readonly) UIView *contentView;

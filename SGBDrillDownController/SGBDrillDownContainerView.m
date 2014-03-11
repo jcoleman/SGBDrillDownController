@@ -12,6 +12,8 @@
 
 @implementation SGBDrillDownContainerView
 
+@synthesize borderBackgroundColor=_borderBackgroundColor;
+
 - (id)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
@@ -21,8 +23,8 @@
         self.autoresizingMask = UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
         self.translatesAutoresizingMaskIntoConstraints = NO;
         
-        UIColor *borderColor = ON_LEGACY_UI ? [UIColor blackColor] : [UIColor lightGrayColor];
-        
+        UIColor *borderColor = self.borderBackgroundColor;
+
         _leftBorderView = [[UIView alloc] init];
         _leftBorderView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
         _leftBorderView.opaque = YES;
@@ -61,6 +63,25 @@
 // but since we only ever set the frame, we can stop it by killing setCenter and setBounds.
 - (void)setCenter:(CGPoint)center { return; }
 - (void)setBounds:(CGRect)bounds { return; }
+
+- (UIColor *)borderBackgroundColor
+{
+    if (_borderBackgroundColor)
+    {
+        return _borderBackgroundColor;
+    }
+    else
+    {
+        return ON_LEGACY_UI ? [UIColor blackColor] : [UIColor lightGrayColor];
+    }
+}
+
+- (void)setBorderBackgroundColor:(UIColor *)borderBackgroundColor
+{
+     _borderBackgroundColor = borderBackgroundColor;
+    self.leftBorderView.backgroundColor = borderBackgroundColor;
+    self.rightBorderView.backgroundColor = borderBackgroundColor;
+}
 
 @end
 
