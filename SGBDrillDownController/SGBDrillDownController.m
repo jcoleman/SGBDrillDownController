@@ -1195,14 +1195,19 @@ static NSString * const kStateRestorationHadRestorableRightViewControllerKey = @
         UINavigationItem *rightNavigationItem = viewController.navigationItem;
         rightNavigationItem.hidesBackButton = YES;
         UINavigationItem *oldRightNavigationItem = oldRightController.navigationItem;
+        if (oldRightNavigationItem.title)
+        {
+            rightFakeItem.title = oldRightNavigationItem.title;
+        }
         if (viewController)
         {
-            if (oldRightNavigationItem.title)
-            {
-                rightFakeItem.title = oldRightNavigationItem.title;
-            }
             [self.rightNavigationBar setItems:@[ rightFakeItem ] animated:NO];
             [self.rightNavigationBar setItems:@[ rightFakeItem, rightNavigationItem ] animated:animated];
+        }
+        else
+        {
+            [self.rightNavigationBar setItems:@[ rightFakeItem ] animated:NO];
+            [self.rightNavigationBar setItems:@[ rightFakeItem, SGBDrillDownControllerCreateFakeNavigationItem() ] animated:animated];
         }
 
         NSArray *leftNavigationItems = [self.leftViewControllers valueForKey:@"navigationItem"];
