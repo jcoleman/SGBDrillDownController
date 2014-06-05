@@ -156,6 +156,16 @@ static NSString * const kStateRestorationNumberKey = @"number";
     [self requestPush];
 }
 
+- (void)demoViewPushLeftAndRightButtonTapped:(SGBDemoView *)demoView
+{
+  [self requestPushLeftAndRight];
+}
+
+- (void)demoViewPushLeftAndRightNilButtonTapped:(SGBDemoView *)demoView
+{
+  [self requestPushLeftAndRightNil];
+}
+
 - (void)demoViewPushNilButtonTapped:(SGBDemoView *)demoView
 {
     [self requestPushNil];
@@ -208,6 +218,21 @@ static NSString * const kStateRestorationNumberKey = @"number";
     }
 
     [self.drillDownController pushViewController:nextController animated:self.useAnimation completion:nil];
+}
+
+- (void)requestPushLeftAndRight
+{
+    SGBDemoController *topController = [[self.drillDownController viewControllers] lastObject];
+    SGBDemoController *nextLeftController = [[SGBDemoController alloc] initWithNumber:topController.number + 1];
+    SGBDemoController *nextRightController = [[SGBDemoController alloc] initWithNumber:topController.number + 2];
+    [self.drillDownController pushLeftViewController:nextLeftController rightViewController:nextRightController animated:YES completion:nil];
+}
+
+- (void)requestPushLeftAndRightNil
+{
+    SGBDemoController *topController = [[self.drillDownController viewControllers] lastObject];
+    SGBDemoController *nextLeftController = [[SGBDemoController alloc] initWithNumber:topController.number + 1];
+    [self.drillDownController pushLeftViewController:nextLeftController rightViewController:nil animated:YES completion:nil];
 }
 
 - (void)requestPushNil

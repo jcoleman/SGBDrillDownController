@@ -169,18 +169,18 @@
     KIFTestScenario *scenario = [KIFTestScenario scenarioWithDescription:@"Test replacing controllers"];
     
     // If we replace with no controllers then nothing should happen
-    [scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Replace!"]];
+    [scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Replace right!"]];
     
     // If we push a controller and replace then we should have a second controler
     [scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Push!"]];
     [scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"Screen 1 View" traits:UIAccessibilityTraitStaticText]];
     
-    [scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Replace!"]];
+    [scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Replace right!"]];
     [scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"Screen 1 View" traits:UIAccessibilityTraitStaticText]];
     [scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"Screen 2 View" traits:UIAccessibilityTraitStaticText]];
     
     // If we replace it again then we should see the new controller
-    [scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Replace!"]];
+    [scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Replace right!"]];
     [scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"Screen 1 View" traits:UIAccessibilityTraitStaticText]];
     [scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"Screen 3 View" traits:UIAccessibilityTraitStaticText]];
     
@@ -190,7 +190,7 @@
     [scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"Screen 3 View" traits:UIAccessibilityTraitStaticText]];
     [scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"Screen 4 View" traits:UIAccessibilityTraitStaticText]];
     
-    [scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Replace!"]];
+    [scenario addStep:[KIFTestStep stepToTapViewWithAccessibilityLabel:@"Replace right!"]];
     [scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"Screen 3 View" traits:UIAccessibilityTraitStaticText]];
     [scenario addStep:[KIFTestStep stepToWaitForViewWithAccessibilityLabel:@"Screen 5 View" traits:UIAccessibilityTraitStaticText]];
     

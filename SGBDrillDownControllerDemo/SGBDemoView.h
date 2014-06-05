@@ -22,8 +22,11 @@
 
 @protocol SGBDemoViewDelegate <NSObject>
 
+@required
 - (void)demoViewAnimationSwitchChanged:(SGBDemoView *)demoView;
 - (void)demoViewPushButtonTapped:(SGBDemoView *)demoView;
+- (void)demoViewPushLeftAndRightButtonTapped:(SGBDemoView *)demoView;
+- (void)demoViewPushLeftAndRightNilButtonTapped:(SGBDemoView *)demoView;
 - (void)demoViewPushNilButtonTapped:(SGBDemoView *)demoView;
 - (void)demoViewPopButtonTapped:(SGBDemoView *)demoView;
 - (void)demoViewPopToRootButtonTapped:(SGBDemoView *)demoView;

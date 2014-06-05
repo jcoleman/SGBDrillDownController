@@ -13,6 +13,8 @@
 
 @property (nonatomic, strong) UIButton *pushButton;
 @property (nonatomic, strong) UIButton *pushNilButton;
+@property (nonatomic, strong) UIButton *pushLeftAndRightButton;
+@property (nonatomic, strong) UIButton *pushLeftAndRightNilButton;
 @property (nonatomic, strong) UIButton *popButton;
 @property (nonatomic, strong) UIButton *popToRootButton;
 @property (nonatomic, strong) UIButton *navigationBarsButton;
@@ -59,7 +61,19 @@
         [_pushNilButton setTitle:@"Push nil!" forState:UIControlStateNormal];
         [_pushNilButton addTarget:self action:@selector(pushNilButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:_pushNilButton];
-        
+
+        _pushLeftAndRightButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        _pushLeftAndRightButton.autoresizesSubviews = UIViewAutoresizingFlexibleWidth;
+        [_pushLeftAndRightButton setTitle:@"Push left and right!" forState:UIControlStateNormal];
+        [_pushLeftAndRightButton addTarget:self action:@selector(pushLeftAndRightButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:_pushLeftAndRightButton];
+
+        _pushLeftAndRightNilButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+        _pushLeftAndRightNilButton.autoresizesSubviews = UIViewAutoresizingFlexibleWidth;
+        [_pushLeftAndRightNilButton setTitle:@"Push left and right (nil)!" forState:UIControlStateNormal];
+        [_pushLeftAndRightNilButton addTarget:self action:@selector(pushLeftAndRightNilButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
+        [self addSubview:_pushLeftAndRightNilButton];
+
         _popButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
         _popButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         [_popButton setTitle:@"Pop!" forState:UIControlStateNormal];
@@ -86,7 +100,7 @@
         
         _replaceButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
         _replaceButton.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-        [_replaceButton setTitle:@"Replace!" forState:UIControlStateNormal];
+        [_replaceButton setTitle:@"Replace right!" forState:UIControlStateNormal];
         [_replaceButton addTarget:self action:@selector(replaceButtonTapped:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:_replaceButton];
         
@@ -116,16 +130,29 @@
 {
     self.appearanceCountLabel.frame = CGRectMake(20, 20, self.bounds.size.width - 140, 44);
     self.animationSwitch.frame = CGRectMake(self.bounds.size.width - 101, 28, 79, 27);
-    
-    self.pushButton.frame = CGRectMake(20, 72, self.bounds.size.width - 40, 44);
-    self.pushNilButton.frame = CGRectMake(20, 124, self.bounds.size.width - 40, 44);
-    self.popButton.frame = CGRectMake(20, 176, self.bounds.size.width - 40, 44);
-    self.popToRootButton.frame = CGRectMake(20, 228, self.bounds.size.width - 40, 44);
-    self.navigationBarsButton.frame = CGRectMake(20, 280, self.bounds.size.width - 40, 44);
-    self.toolbarsButton.frame = CGRectMake(20, 332, self.bounds.size.width - 40, 44);
-    self.replaceButton.frame = CGRectMake(20, 384, self.bounds.size.width - 40, 44);
-    self.removeButton.frame = CGRectMake(20, 436, self.bounds.size.width - 40, 44);
-    self.toggleBackgroundAlphaButton.frame = CGRectMake(20, 488, self.bounds.size.width - 40, 44);
+
+    NSArray* buttons = @[
+      self.pushButton,
+      self.pushNilButton,
+      self.pushLeftAndRightButton,
+      self.pushLeftAndRightNilButton,
+      self.popButton,
+      self.popToRootButton,
+      self.navigationBarsButton,
+      self.toolbarsButton,
+      self.replaceButton,
+      self.removeButton,
+      self.toggleBackgroundAlphaButton,
+     ];
+
+    CGFloat y = 72.0f;
+    CGFloat height = 44.0f;
+    CGFloat width =  self.bounds.size.width - 40;
+    for (UIButton* button in buttons)
+    {
+        button.frame = CGRectMake(20.0f, y, width, height);
+        y += height;
+    }
 
     self.screenNumberLabel.frame = CGRectMake(20, self.bounds.size.height - 40, self.bounds.size.width - 40, 20);
 }
@@ -171,6 +198,16 @@
 - (void)pushButtonTapped:(id)sender
 {
     [self.delegate demoViewPushButtonTapped:self];
+}
+
+- (void)pushLeftAndRightButtonTapped:(id)sender
+{
+    [self.delegate demoViewPushLeftAndRightButtonTapped:self];
+}
+
+- (void)pushLeftAndRightNilButtonTapped:(id)sender
+{
+    [self.delegate demoViewPushLeftAndRightNilButtonTapped:self];
 }
 
 - (void)pushNilButtonTapped:(id)sender
