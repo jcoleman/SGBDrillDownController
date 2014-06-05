@@ -1841,7 +1841,7 @@ static NSString * const kStateRestorationHadRestorableRightViewControllerKey = @
         [self.leftViewControllers removeLastObject];
 
         NSArray *leftNavigationItems = [self.leftViewControllers valueForKey:@"navigationItem"];
-        ((UINavigationItem *)leftNavigationItems[0]).hidesBackButton = NO;
+        ((UINavigationItem *)[leftNavigationItems lastObject]).hidesBackButton = NO;
         [self.leftNavigationBar setItems:leftNavigationItems animated:animated];
 
         UINavigationItem *oldRightNavigationItem;
