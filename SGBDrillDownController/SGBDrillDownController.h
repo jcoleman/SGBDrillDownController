@@ -46,6 +46,7 @@ extern NSString * const SGBDrillDownControllerDidReplaceNotification;
 @property (nonatomic, strong) UIViewController *rightPlaceholderController;
 
 - (void)pushViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void(^)(void))completion;
+- (void)pushLeftViewController:(UIViewController *)newLeftViewController rightViewController:(UIViewController *)newRightViewController animated:(BOOL)animated completion:(void (^)(void))completion;
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated completion:(void(^)(void))completion;
 - (void)popToViewController:(UIViewController *)viewController animated:(BOOL)animated completion:(void(^)(void))completion;
 - (void)popToRootViewControllerAnimated:(BOOL)animated completion:(void(^)(void))completion;

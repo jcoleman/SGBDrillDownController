@@ -1387,6 +1387,315 @@ static NSString * const kStateRestorationHadRestorableRightViewControllerKey = @
      }];
 }
 
+- (void)pushLeftViewController:(UIViewController *)newLeftViewController
+           rightViewController:(UIViewController *)newRightViewController
+                      animated:(BOOL)animated
+                    completion:(void (^)(void))completion
+{
+    if (!newLeftViewController) [NSException raise:SGBDrillDownControllerException format:@"Cannot push nil leftViewController"];
+
+    NSArray* viewControllers = self.viewControllers;
+    if ([viewControllers containsObject:newLeftViewController]) [NSException raise:SGBDrillDownControllerException format:@"Cannot push leftViewController that is already on the stack"];
+    if (newRightViewController && [viewControllers containsObject:newRightViewController]) [NSException raise:SGBDrillDownControllerException format:@"Cannot push rightViewController that is already on the stack"];
+
+    UIViewController *oldLeftViewController = self.leftViewController ? self.leftViewController : self.leftPlaceholderController;
+    UIViewController *oldRightViewController = self.rightViewController ? self.rightViewController : self.rightPlaceholderController;
+
+    SGBDrillDownContainerView *newLeftContainerView = nil;
+    SGBDrillDownContainerView *oldLeftContainerView = oldLeftViewController.view.drillDownContainerView;
+    SGBDrillDownContainerView *newRightContainerView = nil;
+    SGBDrillDownContainerView * oldRightContainerView = oldRightViewController.view.drillDownContainerView;
+    SGBDrillDownContainerView *rightPlaceholderContainerView = self.rightPlaceholderController.view.drillDownContainerView;;
+
+    [self addChildViewController:newLeftViewController];
+    newLeftContainerView = [[SGBDrillDownContainerView alloc] init];
+    [newLeftContainerView addViewToContentView:newLeftViewController.view];
+    [self.view addSubview:newLeftContainerView];
+
+    [newLeftViewController beginAppearanceTransition:YES animated:animated];
+    [oldLeftViewController beginAppearanceTransition:NO animated:animated];
+
+    if (newRightViewController)
+    {
+        [self addChildViewController:newRightViewController];
+        newRightContainerView = [[SGBDrillDownContainerView alloc] init];
+        [newRightContainerView addViewToContentView:newRightViewController.view];
+        [self.view addSubview:newRightContainerView];
+
+        [newRightViewController beginAppearanceTransition:YES animated:animated];
+        [oldRightViewController beginAppearanceTransition:NO animated:animated];
+    }
+    else
+    {
+        if (oldRightContainerView && oldLeftContainerView)
+        {
+            [self.view insertSubview:oldRightContainerView aboveSubview:oldLeftContainerView];
+        }
+
+        if (oldRightViewController && oldRightViewController != self.rightPlaceholderController)
+        {
+            [self.rightPlaceholderController beginAppearanceTransition:YES animated:animated];
+            rightPlaceholderContainerView.hidden = NO;
+        }
+    }
+
+    if (self.rightViewController)
+    {
+        [self.leftViewControllers addObject:self.rightViewController];
+    }
+    [self.leftViewControllers addObject:newLeftViewController];
+    self.rightViewController = newRightViewController;
+
+    // We use fake items to cause navigation bar animations when necessary.
+    UINavigationItem *leftFakeItem = nil;
+    UINavigationItem *rightFakeItem = nil;
+
+    UIBarButtonItem *emptyBackBarButtonItem = nil;
+
+    CALayer *oldRightContainerMaskLayer = nil;
+    CGRect oldRightContainerAnimatedFrame;
+    CGFloat oldRightContainerAnimatedDeltaX;
+
+    CALayer *oldLeftContainerMaskLayer = nil;
+    CGRect oldLeftContainerAnimatedFrame;
+    CGFloat oldLeftContainerAnimatedDeltaX;
+
+    BOOL animatedOldRightViewController = NO;
+
+    if (animated)
+    {
+        [self layoutController:newLeftViewController
+                    atPosition:SGBDrillDownControllerPositionLeft
+                    visibility:SGBDrillDownControllerVisibilityHiddenLeft];
+        [newLeftContainerView addShadowViewAtPosition:SGBDrillDownContainerShadowRight];
+
+        if (oldLeftViewController)
+        {
+            [oldLeftContainerView addFadingView];
+            [oldLeftContainerView setFadingViewAlpha:0.0];
+
+            CGFloat oldLeftContainerFrameX = oldLeftContainerView.frame.origin.x;
+
+            oldLeftContainerAnimatedFrame = SGBDrillDownControllerRightParallaxFrame(oldLeftContainerView.frame);
+
+            oldLeftContainerAnimatedDeltaX = oldLeftContainerFrameX - oldLeftContainerAnimatedFrame.origin.x;
+
+            oldLeftContainerMaskLayer = [CALayer layer];
+            oldLeftContainerMaskLayer.backgroundColor = [UIColor blackColor].CGColor;
+            oldLeftContainerMaskLayer.frame = oldLeftContainerView.bounds;
+            oldLeftContainerView.layer.mask = oldLeftContainerMaskLayer;
+
+            CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"position"];
+            maskAnimation.duration = kSGBDrillDownControllerAnimationDuration;
+            maskAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+            maskAnimation.fromValue = [NSValue valueWithCGPoint:oldLeftContainerMaskLayer.position];
+            CGPoint position = oldLeftContainerMaskLayer.position;
+            position.x += oldLeftContainerAnimatedDeltaX;
+            maskAnimation.toValue = [NSValue valueWithCGPoint:position];
+            maskAnimation.fillMode = kCAFillModeForwards;
+            maskAnimation.removedOnCompletion = NO;
+            [oldLeftContainerMaskLayer addAnimation:maskAnimation forKey:@"animatePosition"];
+        }
+
+
+        leftFakeItem = SGBDrillDownControllerCreateFakeNavigationItem();
+        UINavigationItem *leftNavigationItem = newLeftViewController.navigationItem;
+        leftNavigationItem.hidesBackButton = (self.leftViewControllers.count == 1);
+        NSArray *leftNavigationItems = [self.leftViewControllers valueForKey:@"navigationItem"];
+        [self.leftNavigationBar setItems:[leftNavigationItems arrayByAddingObject:leftFakeItem] animated:NO];
+        [self.leftNavigationBar setItems:leftNavigationItems animated:YES];
+
+        if (!leftNavigationItem.backBarButtonItem)
+        {
+            // I'm so, so sorry. iOS 7.1 shows a random ellipsis in place of the back
+            // button on the first animation with a back button unless I do this.
+            emptyBackBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
+            leftNavigationItem.backBarButtonItem = emptyBackBarButtonItem;
+        }
+
+        rightFakeItem = SGBDrillDownControllerCreateFakeNavigationItem();
+        UINavigationItem *oldRightNavigationItem = nil;
+        if (oldRightViewController && oldRightViewController != self.rightPlaceholderController)
+        {
+            oldRightNavigationItem = oldRightViewController.navigationItem;
+            if (oldRightNavigationItem.title)
+            {
+              rightFakeItem.title = oldRightNavigationItem.title;
+            }
+        }
+
+        animatedOldRightViewController = oldRightViewController && (newRightViewController || oldRightViewController != self.rightPlaceholderController);
+        if (animatedOldRightViewController)
+        {
+            [oldRightContainerView addFadingView];
+            [oldRightContainerView setFadingViewAlpha:0.0];
+
+            CGFloat oldRightContainerFrameX = oldRightContainerView.frame.origin.x;
+
+            if (newRightViewController)
+            {
+                oldRightContainerAnimatedFrame = SGBDrillDownControllerLeftParallaxFrame(oldRightContainerView.frame);
+            }
+            else
+            {
+                oldRightContainerAnimatedFrame = oldRightContainerView.frame;
+                oldRightContainerAnimatedFrame.origin.x -= oldRightContainerAnimatedFrame.size.width;
+            }
+
+            oldRightContainerAnimatedDeltaX = oldRightContainerFrameX - oldRightContainerAnimatedFrame.origin.x;
+
+            oldRightContainerMaskLayer = [CALayer layer];
+            oldRightContainerMaskLayer.backgroundColor = [UIColor blackColor].CGColor;
+            oldRightContainerMaskLayer.frame = oldRightContainerView.bounds;
+            oldRightContainerView.layer.mask = oldRightContainerMaskLayer;
+
+            CABasicAnimation *maskAnimation = [CABasicAnimation animationWithKeyPath:@"position"];
+            maskAnimation.duration = kSGBDrillDownControllerAnimationDuration;
+            maskAnimation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
+            maskAnimation.fromValue = [NSValue valueWithCGPoint:oldRightContainerMaskLayer.position];
+            CGPoint position = oldRightContainerMaskLayer.position;
+            position.x += oldRightContainerAnimatedDeltaX;
+            maskAnimation.toValue = [NSValue valueWithCGPoint:position];
+            maskAnimation.fillMode = kCAFillModeForwards;
+            maskAnimation.removedOnCompletion = NO;
+            [oldRightContainerMaskLayer addAnimation:maskAnimation forKey:@"animatePosition"];
+        }
+
+        if (newRightViewController)
+        {
+            [self layoutController:newRightViewController
+                        atPosition:SGBDrillDownControllerPositionRight
+                        visibility:SGBDrillDownControllerVisibilityHiddenRight];
+            [newRightContainerView addShadowViewAtPosition:SGBDrillDownContainerShadowLeft];
+
+            UINavigationItem *rightNavigationItem = newRightViewController.navigationItem;
+            rightNavigationItem.hidesBackButton = YES;
+            [self.rightNavigationBar setItems:@[ rightFakeItem ] animated:NO];
+            [self.rightNavigationBar setItems:@[ rightFakeItem, rightNavigationItem ] animated:animated];
+        }
+        else
+        {
+            if (oldRightViewController && oldRightViewController != self.rightPlaceholderController)
+            {
+              [oldRightContainerView addFadingView];
+              [oldRightContainerView setFadingViewAlpha:0.0];
+              [oldRightContainerView addShadowViewAtPosition:SGBDrillDownContainerShadowRight];
+
+              if (self.rightPlaceholderController)
+              {
+                  [self layoutController:self.rightPlaceholderController
+                              atPosition:SGBDrillDownControllerPositionRight
+                              visibility:SGBDrillDownControllerVisibilityHiddenRight];
+
+                  [rightPlaceholderContainerView addFadingView];
+                  [rightPlaceholderContainerView setFadingViewAlpha:kSGBDrillDownControllerHidingMaxFadingViewAlpha];
+              }
+            }
+
+            [self.rightNavigationBar setItems:@[ rightFakeItem ] animated:NO];
+            [self.rightNavigationBar setItems:@[ rightFakeItem, SGBDrillDownControllerCreateFakeNavigationItem() ] animated:animated];
+        }
+    }
+
+    self.leftToolbar.items = [self.leftViewController toolbarItems];
+    self.rightToolbar.items = [self.rightViewController toolbarItems];
+
+    [self bringBarsToFront];
+
+    [self animateWithDuration:kSGBDrillDownControllerAnimationDuration
+     animations:^{
+         if (animated)
+         {
+           if (oldLeftViewController)
+           {
+               oldLeftContainerView.frame = SGBDrillDownControllerRightParallaxFrame(oldLeftContainerView.frame);
+               [oldLeftContainerView setFadingViewAlpha:kSGBDrillDownControllerHidingMaxFadingViewAlpha];
+           }
+
+           if (animatedOldRightViewController)
+           {
+               [oldRightContainerView setFadingViewAlpha:kSGBDrillDownControllerHidingMaxFadingViewAlpha];
+               oldRightContainerView.frame = oldRightContainerAnimatedFrame;
+           }
+
+           if (!newRightViewController && self.rightPlaceholderController)
+           {
+               [rightPlaceholderContainerView setFadingViewAlpha:0.0];
+           }
+         }
+
+         [self layoutController:newLeftViewController
+                     atPosition:SGBDrillDownControllerPositionLeft
+                     visibility:SGBDrillDownControllerVisibilityShowing];
+         [self layoutController:newRightViewController
+                     atPosition:SGBDrillDownControllerPositionRight
+                     visibility:SGBDrillDownControllerVisibilityShowing];
+
+         if (!newRightViewController && self.rightPlaceholderController)
+         {
+             [self layoutController:self.rightPlaceholderController
+                         atPosition:SGBDrillDownControllerPositionRight
+                         visibility:SGBDrillDownControllerVisibilityShowing];
+         }
+     } completion:^(BOOL finished) {
+         [newLeftViewController didMoveToParentViewController:self];
+
+         [oldLeftViewController endAppearanceTransition];
+         oldLeftContainerView.hidden = YES;
+
+         if (animated)
+         {
+             if (oldLeftViewController)
+             {
+                 [oldLeftContainerView removeFadingView];
+                 oldLeftContainerView.layer.mask = nil;
+             }
+
+             rightFakeItem.title = @"";
+
+             if (animatedOldRightViewController)
+             {
+                 [oldRightContainerView removeFadingView];
+                 oldRightContainerView.layer.mask = nil;
+             }
+
+             if (!newRightViewController && self.rightPlaceholderController)
+             {
+                 [rightPlaceholderContainerView removeFadingView];
+             }
+
+             [newLeftContainerView removeShadowView];
+             [newRightContainerView removeShadowView];
+             [oldRightContainerView removeShadowView];
+         }
+
+         if (newRightViewController)
+         {
+             [newRightViewController didMoveToParentViewController:self];
+             if (oldRightViewController)
+             {
+                 [oldRightViewController endAppearanceTransition];
+             }
+         }
+         else
+         {
+             if (oldRightViewController && oldRightViewController != self.rightPlaceholderController)
+             {
+                 [self.rightPlaceholderController endAppearanceTransition];
+             }
+         }
+
+         if (oldRightViewController && oldRightViewController != self.rightPlaceholderController)
+         {
+            oldRightContainerView.hidden = YES;
+         }
+
+         if (completion) completion();
+
+         [[NSNotificationCenter defaultCenter] postNotificationName:SGBDrillDownControllerDidPushNotification object:self];
+     }];
+}
+
 - (UIViewController *)popViewControllerAnimated:(BOOL)animated completion:(void (^)(void))completion
 {
     return [self popViewControllerAnimated:animated
