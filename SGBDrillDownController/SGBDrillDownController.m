@@ -2031,7 +2031,7 @@ static NSString * const kStateRestorationHadRestorableRightViewControllerKey = @
 {
     if (viewController == nil) [NSException raise:SGBDrillDownControllerException format:@"Cannot pop to a nil controller"];
 
-    NSUInteger indexOfViewController = [self.leftViewControllers indexOfObject:viewController];
+    NSUInteger indexOfViewController = [self.viewControllers indexOfObject:viewController];
     if (NSNotFound == indexOfViewController) [NSException raise:SGBDrillDownControllerException format:@"Cannot pop to a controller that is not in the stack"];
     
     if ((viewController == self.leftViewController) || (viewController == self.rightViewController))
