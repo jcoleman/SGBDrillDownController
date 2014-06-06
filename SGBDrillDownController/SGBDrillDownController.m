@@ -1004,7 +1004,7 @@ static NSString * const kStateRestorationHadRestorableRightViewControllerKey = @
 
 - (void)animateWithDuration:(NSTimeInterval)duration animations:(void(^)(void))animations completion:(void (^)(BOOL))completion
 {
-    if (duration > 0)
+    if (duration > 0 && self.view.window)
     {
         self.suspendLayout = YES;
         
@@ -1028,7 +1028,7 @@ static NSString * const kStateRestorationHadRestorableRightViewControllerKey = @
 
 - (void)transitionWithDuration:(NSTimeInterval)duration animations:(void(^)(void))animations completion:(void (^)(BOOL))completion
 {
-    if (duration > 0)
+    if (duration > 0 && self.view.window)
     {
         self.suspendLayout = YES;
         
