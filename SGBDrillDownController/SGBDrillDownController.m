@@ -2062,6 +2062,13 @@ static NSString * const kStateRestorationHadRestorableRightViewControllerKey = @
 
       self.leftViewControllers = leftViewControllers;
 
+      // We're handing off to popViewController and it's going to correctly position
+      // this, but since it thinks that what will now be the the new rightViewController
+      // used to be displayed on the left, it won't call the appearance notification
+      // methods.
+      UIViewController* newRightController = [leftViewControllers lastObject];
+      [newRightController beginAppearanceTransition:YES animated:animated];
+
       UIViewController *tempLeftViewController = [leftViewControllers lastObject];
       [self layoutController:tempLeftViewController
                   atPosition:SGBDrillDownControllerPositionLeft
@@ -2099,6 +2106,8 @@ static NSString * const kStateRestorationHadRestorableRightViewControllerKey = @
            [leftViewController.view removeFromSuperview];
            [leftViewController endAppearanceTransition];
            [leftViewController removeFromParentViewController];
+
+           [self.rightViewController endAppearanceTransition];
 
            if (completion)
            {
